@@ -1,0 +1,4 @@
+torch==2.1.2
+torchaudio==2.1.2
+TTS==0.22.0
+runpod==1.6.0
