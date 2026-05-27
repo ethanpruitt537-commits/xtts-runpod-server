@@ -1,4 +1,4 @@
-FROM runpod/pytorch:latest
+FROM runpod/base:latest
 
 WORKDIR /app
 
