@@ -1,23 +1,27 @@
+import base64, tempfile
+
 def handler(event):
     job_input = event.get("input", {}) or {}
 
     text = job_input.get("text", "Hello, this is XTTS.")
-    speaker_wav = job_input.get("speaker_wav", None)
-    speaker = job_input.get("speaker", None)  # NEW
+    language = job_input.get("language", "en")
+
+    speaker_wav_b64 = job_input.get("speaker_wav_b64")
+    if not speaker_wav_b64:
+        return {"error": "Missing required field: input.speaker_wav_b64 (base64 WAV)."}
+
+    # Write the speaker audio to a temp wav file
+    wav_bytes = base64.b64decode(speaker_wav_b64)
+    with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+        f.write(wav_bytes)
+        speaker_path = f.name
 
     tts = load_model()
 
-    kwargs = {
-        "text": text,
-        "language": "en",
-    }
+    wav = tts.tts(
+        text=text,
+        speaker_wav=speaker_path,
+        language=language
+    )
 
-    # If you provide a speaker_wav, XTTS will voice-clone from it.
-    if speaker_wav:
-        kwargs["speaker_wav"] = speaker_wav
-    else:
-        # Fallback to a named speaker if no wav provided
-        kwargs["speaker"] = speaker or "female_01"
-
-    wav = tts.tts(**kwargs)
     return {"audio": wav.tolist()}
